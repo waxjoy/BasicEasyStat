@@ -1,2 +1,863 @@
-https://cloud.tencent.com/developer/article/1695266
-如何在mac上设置git和配置与github连接
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>描述统计工具</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+  }
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+    margin: 20px 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #4a90d9;
+    border-radius: 2px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid #ddd;
+    margin: 15px 0;
+  }
+
+  /* 输入区 - 支持横向滚动 */
+  .input-area {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 8px;
+    overflow-x: auto;
+  }
+  textarea {
+    width: 100%;
+    min-height: 60px;
+    max-height: 120px;
+    border: none;
+    outline: none;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    color: #333;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+  }
+  .btn-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .btn {
+    padding: 6px 16px;
+    font-size: 13px;
+    border: 1px solid #bbb;
+    background: linear-gradient(to bottom, #fff, #f5f5f5);
+    border-radius: 3px;
+    cursor: pointer;
+    color: #333;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn:hover {
+    background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+    border-color: #999;
+  }
+  .btn:active {
+    background: #e0e0e0;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+  }
+  .btn-primary {
+    background: linear-gradient(to bottom, #4a90d9, #357abd);
+    color: #fff;
+    border-color: #2a6da3;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(to bottom, #5a9ee6, #4285c8);
+    border-color: #357abd;
+  }
+  .btn-danger {
+    color: #c0392b;
+    border-color: #c0392b;
+  }
+  .btn-danger:hover {
+    background: #fdf2f2;
+  }
+
+  /* 统计结果头部 */
+  .stats-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 20px 0 10px 0;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .stats-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #555;
+  }
+  .stats-header-left::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #4a90d9;
+    border-radius: 2px;
+  }
+  .stats-header-right {
+    display: flex;
+    gap: 6px;
+  }
+  .stats-header-right .btn {
+    padding: 5px 14px;
+    font-size: 12px;
+  }
+
+  /* 统计卡片 */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .stat-card-header {
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-card-body {
+    padding: 0;
+  }
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 13px;
+  }
+  .stat-row:last-child {
+    border-bottom: none;
+  }
+  .stat-row.highlight {
+    background: #f0f7ff;
+  }
+  .stat-row.highlight .stat-label {
+    color: #2a6da3;
+    font-weight: 600;
+  }
+  .stat-row.highlight .stat-value {
+    color: #2a6da3;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .stat-label {
+    color: #666;
+    font-weight: 400;
+  }
+  .stat-value {
+    color: #333;
+    font-family: "Consolas", "Courier New", monospace;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .stat-value .sub {
+    font-size: 11px;
+    color: #999;
+    font-weight: 400;
+    margin-left: 2px;
+  }
+
+  /* 空状态 */
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-size: 14px;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 4px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 10000;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .toast.show { opacity: 1; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal-box {
+    background: #fff;
+    border: 1px solid #999;
+    border-radius: 4px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .modal-header {
+    background: linear-gradient(to bottom, #f8f9fa, #e9ecef);
+    padding: 12px 16px;
+    border-bottom: 1px solid #ccc;
+    font-size: 15px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: #666;
+    padding: 0 4px;
+  }
+  .modal-close:hover { color: #333; }
+  .modal-body {
+    padding: 16px;
+  }
+  .drop-zone {
+    border: 2px dashed #bbb;
+    border-radius: 4px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: all 0.15s;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: #4a90d9;
+    background: #f0f7ff;
+  }
+  .drop-zone .icon {
+    font-size: 36px;
+    margin-bottom: 8px;
+    color: #999;
+  }
+  .drop-zone b {
+    color: #4a90d9;
+  }
+  .preview-area {
+    margin-top: 12px;
+    text-align: center;
+  }
+  .preview-area img {
+    max-width: 100%;
+    max-height: 250px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+  .progress-wrap {
+    margin-top: 12px;
+  }
+  .progress-bar-bg {
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, #4a90d9, #357abd);
+    width: 0%;
+    transition: width 0.2s;
+  }
+  .progress-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    text-align: center;
+  }
+  .ocr-result-box {
+    margin-top: 14px;
+  }
+  .ocr-result-box h4 {
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #333;
+  }
+  .ocr-result-box textarea {
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    padding: 8px;
+    min-height: 60px;
+    font-size: 13px;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+  }
+  .ocr-meta {
+    display: flex;
+    gap: 12px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #666;
+  }
+  .ocr-meta b {
+    color: #4a90d9;
+  }
+  .ocr-raw-text {
+    margin-top: 8px;
+    padding: 8px;
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    font-size: 12px;
+    max-height: 100px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    color: #666;
+    font-family: monospace;
+  }
+  .modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #ccc;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 500px) {
+    .stats-row { grid-template-columns: 1fr; }
+    body { padding: 10px; }
+    .stats-header { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>描述统计</h1>
+
+  <div class="section-title">输入数据</div>
+  <div class="input-area">
+    <textarea id="dataInput" placeholder="请输入数字，用空格或逗号分隔，例如：98.2 99.1 98.8 99.5 98.7 99.0 98.5 99.3 98.8 99.2"></textarea>
+  </div>
+  <div class="btn-group">
+    <button class="btn btn-primary" id="ocrBtn">&#128247; OCR识别</button>
+    <button class="btn" id="exampleBtn">示例</button>
+    <button class="btn btn-danger" id="clearBtn">清空</button>
+  </div>
+
+  <hr class="divider">
+
+  <div class="stats-header">
+    <div class="stats-header-left">统计结果</div>
+    <div class="stats-header-right">
+      <button class="btn" id="copyExcel">复制 Excel</button>
+      <button class="btn" id="copyMd">Markdown</button>
+      <button class="btn" id="copyJson">JSON</button>
+    </div>
+  </div>
+
+  <div id="statsContainer">
+    <div class="empty-state">请输入数据以查看统计结果</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- OCR Modal -->
+<div class="modal-overlay" id="ocrModal" hidden>
+  <div class="modal-box">
+    <div class="modal-header">
+      <span>&#128247; 从截图识别数字</span>
+      <button class="modal-close" id="modalClose">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:#666;margin-bottom:12px;">识别在本地浏览器完成，不上传服务器 · 支持 Ctrl+V 粘贴</p>
+      <div class="drop-zone" id="dropZone">
+        <div class="icon">&#128194;</div>
+        <div><b>点击选择</b> · 拖入图片 · <kbd>Ctrl+V</kbd> 粘贴</div>
+        <div style="font-size:12px;color:#999;margin-top:4px;">支持 PNG / JPG / WebP</div>
+        <input type="file" id="ocrFileInput" accept="image/*" hidden />
+      </div>
+      <div class="preview-area" id="ocrPreview" hidden>
+        <img id="ocrPreviewImg" alt="preview" />
+      </div>
+      <div class="progress-wrap" id="ocrProgress" hidden>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="ocrProgressBar"></div></div>
+        <div class="progress-text" id="ocrProgressText">准备中...</div>
+      </div>
+      <div class="ocr-result-box" id="ocrResult" hidden>
+        <h4>提取的数字（可编辑，空格分隔）</h4>
+        <textarea id="ocrNumbers" placeholder="识别到的数字会横向排列在这里"></textarea>
+        <div class="ocr-meta">
+          <span>已识别 <b id="ocrCount">0</b> 个数字</span>
+          <span>· 原始识别文本 ↓</span>
+        </div>
+        <div class="ocr-raw-text" id="ocrRaw"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="ocrCancel">取消</button>
+      <button class="btn" id="ocrReRecognize" hidden>重新识别</button>
+      <button class="btn btn-primary" id="ocrApply" hidden>填入数据</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== 核心计算 =====================
+function parseData(text) {
+  if (!text) return [];
+  return text.split(/[\s,;\uFF0C\uFF1B]+/).map(function(s) { return s.trim(); }).filter(Boolean)
+    .map(Number).filter(function(n) { return Number.isFinite(n); });
+}
+
+function quantile(sorted, p) {
+  var n = sorted.length;
+  if (n === 0) return NaN;
+  if (n === 1) return sorted[0];
+  var h = (n - 1) * p, lo = Math.floor(h), hi = Math.ceil(h);
+  if (lo === hi) return sorted[lo];
+  return sorted[lo] + (h - lo) * (sorted[hi] - sorted[lo]);
+}
+
+function describe(x) {
+  var n = x.length;
+  if (n === 0) return null;
+  var sorted = x.slice().sort(function(a, b) { return a - b; });
+  var sum = x.reduce(function(s, v) { return s + v; }, 0);
+  var mean = sum / n;
+  var min = sorted[0], max = sorted[n - 1];
+  var range = max - min;
+  var median = quantile(sorted, 0.5);
+  var q1 = quantile(sorted, 0.25), q3 = quantile(sorted, 0.75);
+  var iqr = q3 - q1;
+  var ss = x.reduce(function(s, v) { return s + (v - mean) * (v - mean); }, 0);
+  var varSample = n > 1 ? ss / (n - 1) : NaN;
+  var varPop = ss / n;
+  var sdSample = Math.sqrt(varSample);
+  var sdPop = Math.sqrt(varPop);
+  var freq = {};
+  x.forEach(function(v) { freq[v] = (freq[v] || 0) + 1; });
+  var me = Object.entries(freq).sort(function(a, b) { return b[1] - a[1]; });
+  var mode = parseFloat(me[0][0]);
+  var modeCount = +me[0][1];
+  var isMultiModal = me.length > 1 && +me[1][1] === modeCount;
+  var se = n > 1 ? sdSample / Math.sqrt(n) : NaN;
+  var rsd = mean !== 0 ? (sdSample / Math.abs(mean)) * 100 : NaN;
+  var skew = NaN, kurt = NaN;
+  if (n >= 3 && sdSample > 0) {
+    var m3 = x.reduce(function(s, v) { return s + Math.pow(v - mean, 3); }, 0);
+    skew = n * m3 / ((n - 1) * (n - 2) * Math.pow(sdSample, 3));
+  }
+  if (n >= 4 && sdSample > 0) {
+    var m4 = x.reduce(function(s, v) { return s + Math.pow(v - mean, 4); }, 0);
+    kurt = n * (n + 1) * m4 / ((n - 1) * (n - 2) * (n - 3) * Math.pow(sdSample, 4))
+         - 3 * (n - 1) * (n - 1) / ((n - 2) * (n - 3));
+  }
+  return { n: n, sum: sum, mean: mean, median: median, mode: mode, isMultiModal: isMultiModal,
+           min: min, max: max, range: range, q1: q1, q3: q3, iqr: iqr,
+           varSample: varSample, varPop: varPop, sdSample: sdSample, sdPop: sdPop, se: se, rsd: rsd, skew: skew, kurt: kurt };
+}
+
+function fmt(v, d) {
+  d = d || 4;
+  if (v === null || v === undefined || Number.isNaN(v)) return '\u2014';
+  if (!Number.isFinite(v)) return v > 0 ? '\u221e' : '-\u221e';
+  if (Math.abs(v) > 0 && (Math.abs(v) >= 1e6 || Math.abs(v) < 1e-3)) return v.toExponential(3);
+  return Number(v).toFixed(d).replace(/\.?0+$/, function(m) { return m.indexOf('.') >= 0 ? '' : m; });
+}
+
+// ===================== 渲染 =====================
+var dataInput = document.getElementById('dataInput');
+var statsContainer = document.getElementById('statsContainer');
+
+function render() {
+  var data = parseData(dataInput.value);
+  if (data.length === 0) {
+    statsContainer.innerHTML = '<div class="empty-state">\u8bf7\u8f93\u5165\u6570\u636e\u4ee5\u67e5\u770b\u7edf\u8ba1\u7ed3\u679c</div>';
+    return;
+  }
+  var d = describe(data);
+  var sumSq = data.reduce(function(s, v) { return s + v * v; }, 0);
+  statsContainer.innerHTML =
+    '<div class="stats-row">' +
+      '<div class="stat-card">' +
+        '<div class="stat-card-header">&#128230; \u6837\u672c</div>' +
+        '<div class="stat-card-body">' +
+          '<div class="stat-row"><span class="stat-label">\u6837\u672c\u6570 n</span><span class="stat-value">' + d.n + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u03a3x</span><span class="stat-value">' + fmt(d.sum) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u03a3x\u00b2</span><span class="stat-value">' + fmt(sumSq) + '</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-card-header">&#128205; \u96c6\u4e2d\u8d8b\u52bf</div>' +
+        '<div class="stat-card-body">' +
+          '<div class="stat-row highlight"><span class="stat-label">\u5747\u503c x\u0304</span><span class="stat-value">' + fmt(d.mean) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u4e2d\u4f4d\u6570</span><span class="stat-value">' + fmt(d.median) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u4f17\u6570</span><span class="stat-value">' + fmt(d.mode) + (d.isMultiModal ? '<span class="sub">(\u591a)</span>' : '') + '</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-card-header">&#128207; \u79bb\u6563\u7a0b\u5ea6</div>' +
+        '<div class="stat-card-body">' +
+          '<div class="stat-row highlight"><span class="stat-label">RSD \u53d8\u5f02\u7cfb\u6570</span><span class="stat-value">' + fmt(d.rsd, 3) + '%</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u6807\u51c6\u5dee s</span><span class="stat-value">' + fmt(d.sdSample) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u65b9\u5dee s\u00b2</span><span class="stat-value">' + fmt(d.varSample) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u6807\u51c6\u8bef SE</span><span class="stat-value">' + fmt(d.se) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u6781\u5dee R</span><span class="stat-value">' + fmt(d.range) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">IQR</span><span class="stat-value">' + fmt(d.iqr) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">Q1 / Q3</span><span class="stat-value">' + fmt(d.q1) + ' / ' + fmt(d.q3) + '</span></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="stat-card">' +
+        '<div class="stat-card-header">&#128208; \u5206\u5e03\u5f62\u72b6</div>' +
+        '<div class="stat-card-body">' +
+          '<div class="stat-row"><span class="stat-label">\u504f\u5ea6</span><span class="stat-value">' + fmt(d.skew) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u5cf0\u5ea6</span><span class="stat-value">' + fmt(d.kurt) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">min / max</span><span class="stat-value">' + fmt(d.min) + ' / ' + fmt(d.max) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u03c3 (\u603b\u4f53)</span><span class="stat-value">' + fmt(d.sdPop) + '</span></div>' +
+          '<div class="stat-row"><span class="stat-label">\u03c3\u00b2 (\u603b\u4f53)</span><span class="stat-value">' + fmt(d.varPop) + '</span></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+}
+
+function buildStatsForExport() {
+  var data = parseData(dataInput.value);
+  if (data.length === 0) return null;
+  var d = describe(data);
+  var sumSq = data.reduce(function(s, v) { return s + v * v; }, 0);
+  var obj = {};
+  obj['\u6837\u672c\u6570 n'] = d.n;
+  obj['\u603b\u548c \u03a3x'] = d.sum;
+  obj['\u5e73\u65b9\u548c \u03a3x\u00b2'] = sumSq;
+  obj['\u5747\u503c x\u0304'] = d.mean;
+  obj['\u4e2d\u4f4d\u6570'] = d.median;
+  obj['\u4f17\u6570'] = d.mode;
+  obj['\u6700\u5c0f\u503c min'] = d.min;
+  obj['\u6700\u5927\u503c max'] = d.max;
+  obj['\u6781\u5dee R'] = d.range;
+  obj['Q1'] = d.q1; obj['Q3'] = d.q3; obj['IQR'] = d.iqr;
+  obj['\u65b9\u5dee s\u00b2 (\u6837\u672c)'] = d.varSample;
+  obj['\u6807\u51c6\u5dee s (\u6837\u672c)'] = d.sdSample;
+  obj['\u6807\u51c6\u8bef SE'] = d.se;
+  obj['RSD \u53d8\u5f02\u7cfb\u6570 (%)'] = d.rsd;
+  obj['\u603b\u4f53\u65b9\u5dee \u03c3\u00b2'] = d.varPop;
+  obj['\u603b\u4f53\u6807\u51c6\u5dee \u03c3'] = d.sdPop;
+  obj['\u504f\u5ea6 Skewness'] = d.skew;
+  obj['\u5cf0\u5ea6 Kurtosis (excess)'] = d.kurt;
+  return obj;
+}
+
+function formatStats(format) {
+  var stats = buildStatsForExport();
+  if (!stats) return '';
+  var keys = Object.keys(stats);
+  if (format === 'tsv') {
+    var lines = ['\u6307\u6807\t\u503c'];
+    for (var i = 0; i < keys.length; i++) {
+      lines.push(keys[i] + '\t' + fmt(stats[keys[i]], 6));
+    }
+    return lines.join('\n');
+  }
+  if (format === 'md') {
+    var lines = ['| \u6307\u6807 | \u503c |', '|---|---|'];
+    for (var i = 0; i < keys.length; i++) {
+      lines.push('| ' + keys[i] + ' | ' + fmt(stats[keys[i]], 6) + ' |');
+    }
+    return lines.join('\n');
+  }
+  if (format === 'json') {
+    var obj = { n: stats['\u6837\u672c\u6570 n'], data: parseData(dataInput.value) };
+    for (var i = 0; i < keys.length; i++) {
+      obj[keys[i]] = stats[keys[i]];
+    }
+    return JSON.stringify(obj, null, 2);
+  }
+  return '';
+}
+
+// ===================== 复制 / Toast =====================
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).catch(function() { fallbackCopy(text); });
+  }
+  return fallbackCopy(text);
+}
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.cssText = 'position:fixed;opacity:0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); } catch (e) {}
+  document.body.removeChild(ta);
+}
+var toastTimer = null;
+function showToast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function() { el.classList.remove('show'); }, 1800);
+}
+
+// ===================== OCR =====================
+var ocrWorker = null, ocrLoading = false, ocrCurrentImage = null;
+
+function ensureOCR() {
+  if (ocrWorker) return Promise.resolve(ocrWorker);
+  if (ocrLoading) {
+    return new Promise(function(resolve) {
+      var check = function() {
+        if (!ocrLoading) { resolve(ocrWorker); return; }
+        setTimeout(check, 100);
+      };
+      check();
+    });
+  }
+  ocrLoading = true;
+  return new Promise(function(resolve, reject) {
+    if (typeof Tesseract !== 'undefined') {
+      initWorker(resolve, reject);
+    } else {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+      s.onload = function() { initWorker(resolve, reject); };
+      s.onerror = function() { ocrLoading = false; reject(new Error('\u65e0\u6cd5\u52a0\u8f7d Tesseract.js\uff08\u9700\u8981\u8054\u7f51\uff09')); };
+      document.head.appendChild(s);
+    }
+  });
+}
+
+function initWorker(resolve, reject) {
+  setOCRProgress('\u52a0\u8f7d OCR \u5f15\u64ce\uff08\u9996\u6b21\u7ea6 10MB\uff09', 0);
+  Tesseract.createWorker('eng', 1, {
+    logger: function(m) { if (m.status === 'recognizing text') setOCRProgress('\u8bc6\u522b\u4e2d', m.progress); }
+  }).then(function(w) {
+    ocrWorker = w;
+    return w.setParameters({ tessedit_char_whitelist: '0123456789.-+eE%,$ ' });
+  }).then(function() {
+    ocrLoading = false;
+    resolve(ocrWorker);
+  }).catch(function(err) {
+    ocrLoading = false;
+    reject(err);
+  });
+}
+
+function setOCRProgress(label, p) {
+  document.getElementById('ocrProgress').hidden = false;
+  document.getElementById('ocrProgressText').textContent = label + ' ' + (p * 100).toFixed(0) + '%';
+  document.getElementById('ocrProgressBar').style.width = (p * 100) + '%';
+}
+function hideOCRProgress() { document.getElementById('ocrProgress').hidden = true; }
+
+function openOCR() { document.getElementById('ocrModal').hidden = false; resetOCRUI(); }
+function closeOCR() { document.getElementById('ocrModal').hidden = true; ocrCurrentImage = null; }
+function resetOCRUI() {
+  document.getElementById('ocrPreview').hidden = true;
+  document.getElementById('ocrResult').hidden = true;
+  document.getElementById('ocrReRecognize').hidden = true;
+  document.getElementById('ocrApply').hidden = true;
+  hideOCRProgress();
+}
+
+function runOCR(imgSrc) {
+  resetOCRUI(); ocrCurrentImage = imgSrc;
+  document.getElementById('ocrPreviewImg').src = imgSrc;
+  document.getElementById('ocrPreview').hidden = false;
+  ensureOCR().then(function(w) {
+    return w.recognize(imgSrc);
+  }).then(function(result) {
+    showOCRResult(result.data.text || '');
+  }).catch(function(err) {
+    showToast('\u8bc6\u522b\u5931\u8d25: ' + err.message);
+    hideOCRProgress();
+  });
+}
+
+function extractNumbers(text) {
+  var nums = [];
+  var lines = text.split(/\n/);
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i];
+    var cleaned = line.replace(/[^\d.,\-+eE\s]/g, ' ');
+    var tokens = cleaned.split(/\s+/).filter(Boolean);
+    for (var j = 0; j < tokens.length; j++) {
+      var tok = tokens[j];
+      var matches = tok.match(/-?\d{1,3}(?:,\d{3})+(?:\.\d+)?|-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?/g);
+      if (matches) {
+        for (var k = 0; k < matches.length; k++) {
+          var n = parseFloat(matches[k].replace(/,/g, ''));
+          if (Number.isFinite(n)) nums.push(n);
+        }
+      }
+    }
+  }
+  return nums;
+}
+
+function showOCRResult(text) {
+  hideOCRProgress();
+  var nums = extractNumbers(text);
+  document.getElementById('ocrResult').hidden = false;
+  // 用空格横向排列，而非换行
+  document.getElementById('ocrNumbers').value = nums.join(' ');
+  document.getElementById('ocrCount').textContent = nums.length;
+  document.getElementById('ocrRaw').textContent = text.trim() || '\uff08\u7a7a\uff09';
+  document.getElementById('ocrReRecognize').hidden = false;
+  document.getElementById('ocrApply').hidden = false;
+}
+
+function applyOCR() {
+  var text = document.getElementById('ocrNumbers').value;
+  var nums = text.split(/[\s,;\uFF0C\uFF1B]+/).map(function(s) { return s.trim(); }).filter(Boolean)
+    .map(Number).filter(function(n) { return Number.isFinite(n); });
+  if (nums.length === 0) { showToast('\u6ca1\u6709\u6709\u6548\u7684\u6570\u5b57'); return; }
+  var prev = parseData(dataInput.value);
+  var merged = prev.concat(nums);
+  // 填入时也用空格横向排列
+  dataInput.value = merged.join(' ');
+  render();
+  showToast('\u5df2\u6dfb\u52a0 ' + nums.length + ' \u4e2a\uff0c\u5171 ' + merged.length + ' \u4e2a');
+  closeOCR();
+}
+
+// ===================== 事件绑定 =====================
+dataInput.addEventListener('input', render);
+document.getElementById('ocrBtn').addEventListener('click', openOCR);
+document.getElementById('exampleBtn').addEventListener('click', function() {
+  // 示例数据用空格横向排列
+  dataInput.value = '98.2 99.1 98.8 99.5 98.7 99.0 98.5 99.3 98.8 99.2';
+  render();
+});
+document.getElementById('clearBtn').addEventListener('click', function() {
+  if (parseData(dataInput.value).length === 0) return;
+  if (!confirm('\u6e05\u7a7a\u5f53\u524d\u6570\u636e\uff1f')) return;
+  dataInput.value = ''; render();
+});
+
+document.getElementById('copyExcel').addEventListener('click', function() {
+  var text = formatStats('tsv');
+  if (!text) { showToast('\u6ca1\u6709\u6570\u636e\u53ef\u590d\u5236'); return; }
+  copyToClipboard(text); showToast('\u5df2\u590d\u5236 TSV \u683c\u5f0f\uff08\u53ef\u76f4\u63a5\u7c98\u8d34\u5230 Excel\uff09');
+});
+document.getElementById('copyMd').addEventListener('click', function() {
+  var text = formatStats('md');
+  if (!text) { showToast('\u6ca1\u6709\u6570\u636e\u53ef\u590d\u5236'); return; }
+  copyToClipboard(text); showToast('\u5df2\u590d\u5236 Markdown \u683c\u5f0f');
+});
+document.getElementById('copyJson').addEventListener('click', function() {
+  var text = formatStats('json');
+  if (!text) { showToast('\u6ca1\u6709\u6570\u636e\u53ef\u590d\u5236'); return; }
+  copyToClipboard(text); showToast('\u5df2\u590d\u5236 JSON \u683c\u5f0f');
+});
+
+// OCR 事件
+var dropZone = document.getElementById('dropZone');
+var fileInput = document.getElementById('ocrFileInput');
+dropZone.addEventListener('click', function() { fileInput.click(); });
+fileInput.addEventListener('change', function(e) {
+  var f = e.target.files[0];
+  if (f) handleImageFile(f);
+  fileInput.value = '';
+});
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('dragover'); });
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  var f = e.dataTransfer.files[0];
+  if (f && f.type && f.type.startsWith('image/')) handleImageFile(f);
+});
+document.addEventListener('paste', function(e) {
+  if (document.getElementById('ocrModal').hidden) return;
+  var items = e.clipboardData && e.clipboardData.items;
+  if (!items) return;
+  for (var i = 0; i < items.length; i++) {
+    if (items[i].type && items[i].type.startsWith('image/')) {
+      var blob = items[i].getAsFile();
+      if (blob) { handleImageFile(blob); break; }
+    }
+  }
+});
+function handleImageFile(file) {
+  var reader = new FileReader();
+  reader.onload = function() { runOCR(reader.result); };
+  reader.readAsDataURL(file);
+}
+document.getElementById('ocrCancel').addEventListener('click', closeOCR);
+document.getElementById('modalClose').addEventListener('click', closeOCR);
+document.getElementById('ocrModal').addEventListener('click', function(e) { if (e.target.id === 'ocrModal') closeOCR(); });
+document.getElementById('ocrReRecognize').addEventListener('click', function() { if (ocrCurrentImage) runOCR(ocrCurrentImage); });
+document.getElementById('ocrApply').addEventListener('click', applyOCR);
+
+// 初始化
+render();
+</script>
+</body>
+</html>
